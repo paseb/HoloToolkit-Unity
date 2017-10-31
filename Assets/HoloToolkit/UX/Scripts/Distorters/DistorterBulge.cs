@@ -29,11 +29,8 @@ namespace MRTK.UX
         [SerializeField]
         private float bulgeStrength = 1f;
 
-        public override Vector3 DistortPoint (Vector3 point, float strength)
+        protected override Vector3 DistortPointInternal (Vector3 point, float strength)
         {
-            if (!isActiveAndEnabled)
-                return point;
-
             float distanceToCenter = Vector3.Distance(point, BulgeCenter);
             if (distanceToCenter < bulgeRadius)
             {
@@ -44,11 +41,8 @@ namespace MRTK.UX
             return point;
         }
 
-        public override Vector3 DistortScale(Vector3 point, float strength)
+        protected override Vector3 DistortScaleInternal(Vector3 point, float strength)
         {
-            if (!isActiveAndEnabled)
-                return Vector3.one;
-
             float distanceToCenter = Vector3.Distance(point, BulgeCenter);
             if (distanceToCenter < bulgeRadius)
             {

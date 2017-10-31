@@ -17,7 +17,7 @@ namespace MRTK.UX
         public float ScaleDistort = 2f;
         public bool UniformScaleDistort = true;
 
-        public override Vector3 DistortPoint(Vector3 point, float strength)
+        protected override Vector3 DistortPointInternal(Vector3 point, float strength)
         {
             if (!isActiveAndEnabled)
                 return point;
@@ -30,7 +30,7 @@ namespace MRTK.UX
             return point;
         }
 
-        public override Vector3 DistortScale(Vector3 point, float strength)
+        protected override Vector3 DistortScaleInternal(Vector3 point, float strength)
         {
             if (!isActiveAndEnabled)
                 return Vector3.one;
@@ -42,7 +42,7 @@ namespace MRTK.UX
             }
             else
             {
-                point = DistortPoint(point, strength);
+                point = DistortPointInternal(point, strength);
                 return Vector3.Lerp (Vector3.one, Vector3.Scale(Vector3.one, Vector3.one + (point * ScaleDistort)), strength);
             }
         }

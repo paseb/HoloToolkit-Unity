@@ -5,6 +5,7 @@ using UnityEngine;
 namespace MRTK.UX
 {
     [RequireComponent(typeof(Parabola))]
+    [RequireComponent(typeof(DistorterGravity))]
     public class ParabolicPointer : PhysicsPointer
     {
         protected override void OnEnable()
@@ -15,6 +16,9 @@ namespace MRTK.UX
                 parabolaMain = gameObject.GetComponent<Parabola>();
 
             parabolaMainRenderers = parabolaMain.GetComponentsInChildren<MRTK.UX.LineRenderer>();
+
+            distorterGravity = GetComponent<DistorterGravity>();
+            parabolaMain.AddDistorter(distorterGravity);
         }
 
         protected override void UpdateRays()
@@ -25,6 +29,23 @@ namespace MRTK.UX
             // Make sure our array will hold
             if (rays == null || rays.Length != lineCastResolution)
                 rays = new RayStep[lineCastResolution];
+
+            // Set up our rays
+            // Turn off gravity so we get accurate rays
+            distorterGravity.enabled = false;
+
+            Vector3 lastPoint = parabolaMain.GetUnclampedPoint(0f);
+            Vector3 currentPoint = Vector3.zero;
+            for (int i = 1; i < rays.Length; i++)
+            {
+                float normalizedDistance = (1f / rays.Length) * i;
+                currentPoint = parabolaMain.GetUnclampedPoint(normalizedDistance);
+                rays[i] = new RayStep(lastPoint, currentPoint);
+                lastPoint = currentPoint;
+            }
+
+            // Re-enable gravity if we're looking at a hotspot
+            distorterGravity.enabled = (HitResult == PointerSurfaceResultEnum.HotSpot);
         }
 
         public override void UpdatePointer() {
@@ -34,23 +55,10 @@ namespace MRTK.UX
             parabolaMain.FirstPoint = TargetOrigin;
             parabolaMain.LastPoint = parabolaTarget;
 
-            Vector3 lastPoint = parabolaMain.GetUnclampedPoint(0f);
-            Vector3 currentPoint = Vector3.zero;
-            totalLineDistance = 0;
-
-            // Set up our rays
-            for (int i = 1; i < rays.Length; i++)
-            {
-                float normalizedDistance = (1f / rays.Length) * i;
-                currentPoint = parabolaMain.GetUnclampedPoint(normalizedDistance);
-                rays[i] = new RayStep(lastPoint, currentPoint);
-                totalLineDistance += rays[i].length;
-                lastPoint = currentPoint;
-            }
-
             // Use the results from the last update to set our HitResult
             float clearWorldLength = 0f;
             HitResult = PointerSurfaceResultEnum.None;
+            distorterGravity.enabled = false;
 
             if (isSelectPressed)
             {
@@ -68,6 +76,9 @@ namespace MRTK.UX
                         if (PhysicsPointer.CheckForHotSpot(Result.End.Object, out hotSpot))
                         {
                             HitResult = PointerSurfaceResultEnum.HotSpot;
+                            // Turn on gravity, point it at hotspot
+                            distorterGravity.WorldCenterOfGravity = hotSpot.transform.position;
+                            distorterGravity.enabled = true;
                         }
                     }
                     else if ((Result.End.Object.layer & invalidLayers) == 0)
@@ -97,6 +108,7 @@ namespace MRTK.UX
 
                     // Clamp the end of the parabola to the result hit's point
                     parabolaMain.LineEndClamp = parabolaMain.GetNormalizedLengthFromWorldLength(clearWorldLength, lineCastResolution);
+
                 }
                 else
                 {
@@ -115,8 +127,6 @@ namespace MRTK.UX
         }
         
         [SerializeField]
-        private AnimationCurve hotSpotMagnetismCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        [SerializeField]
         private float parabolaDistance = 1f;
         [SerializeField]
         private float parabolaDropDist = 1f;
@@ -134,5 +144,7 @@ namespace MRTK.UX
         private MRTK.UX.LineRenderer [] parabolaBounceRenderers;
         [SerializeField]
         private float totalLineDistance;
+
+        private DistorterGravity distorterGravity;
     }
 }

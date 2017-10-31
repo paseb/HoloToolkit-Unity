@@ -23,13 +23,13 @@ namespace MRTK.UX
         [SerializeField]
         private float radius = 2f;
 
-        public override Vector3 DistortPoint(Vector3 point, float strength)
+        protected override Vector3 DistortPointInternal(Vector3 point, float strength)
         {
             Vector3 direction = (point - SphereCenter).normalized;
             return Vector3.Lerp(point, SphereCenter + (direction * radius), strength);
         }
 
-        public override Vector3 DistortScale(Vector3 point, float strength)
+        protected override Vector3 DistortScaleInternal(Vector3 point, float strength)
         {
             return Vector3.one;
         }

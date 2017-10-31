@@ -7,26 +7,84 @@ using UnityEngine;
 
 namespace MRTK.UX
 {
-    public interface IDistorter
-    {
-        Vector3 DistortPoint(Vector3 point, float strength);
-        Vector3 DistortScale(Vector3 point, float strength);
-        int DistortOrder { get; set; }
-    }
-
     public abstract class Distorter : MonoBehaviour, IComparable<Distorter>
     {
         public int CompareTo(Distorter other)
         {
             if (other == null)
                 return 0;
-
+            
             return DistortOrder.CompareTo(other.DistortOrder);
         }
 
-        public abstract Vector3 DistortPoint(Vector3 point, float strength);
+        /// <summary>
+        /// Distorts a world-space point
+        /// Automatically applies DistortStrength and ensures that strength never exceeds 1
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="strength"></param>
+        /// <returns></returns>
+        public Vector3 DistortPoint (Vector3 point, float strength = 1f)
+        {
+            if (!isActiveAndEnabled)
+                return point;
 
-        public abstract Vector3 DistortScale(Vector3 point, float strength);
+            strength = Mathf.Clamp01 (strength * DistortStrength);
+
+            if (strength <= 0)
+                return point;
+
+            return DistortPointInternal(point, strength);
+        }
+
+        /// <summary>
+        /// Distorts a world-space scale
+        /// Automatically applies DistortStrength and ensures that strength never exceeds 1
+        /// </summary>
+        /// <param name="scale"></param>
+        /// <param name="strength"></param>
+        /// <returns></returns>
+        public Vector3 DistortScale(Vector3 scale, float strength = 1f)
+        {
+            if (!isActiveAndEnabled)
+                return scale;
+
+            strength = Mathf.Clamp01(strength * DistortStrength);
+
+            return DistortScaleInternal(scale, strength);
+        }
+
+        /// <summary>
+        /// Internal function where position distortion is done
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="strength"></param>
+        /// <returns></returns>
+        protected abstract Vector3 DistortPointInternal(Vector3 point, float strength);
+
+        /// <summary>
+        /// Internal function where scale distortion is done
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="strength"></param>
+        /// <returns></returns>
+        protected abstract Vector3 DistortScaleInternal(Vector3 point, float strength);
+
+        protected void OnEnable()
+        {
+            // Makes script enableable in editor
+        }
+
+        protected void OnDisable()
+        {
+            // Makes script enableable in editor            
+        }
+
+        public float DistortStrength
+        {
+            get { return distortStrength; }
+            set { distortStrength = Mathf.Clamp01(value); }
+        }
 
         public int DistortOrder
         {
@@ -35,6 +93,10 @@ namespace MRTK.UX
         }
 
         [SerializeField]
+        [Range(0,10)]
         protected int distortOrder = 0;
+        [SerializeField]
+        [Range(0,1)]
+        protected float distortStrength = 1f;
     }
 }

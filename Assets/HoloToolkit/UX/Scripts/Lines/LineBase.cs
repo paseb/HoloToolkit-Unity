@@ -50,7 +50,13 @@ namespace MRTK.UX
         public float VelocityBlend = 0.5f;
 
         [Header ("Distortion")]
+        public LineUtils.DistortionTypeEnum DistortionType = LineUtils.DistortionTypeEnum.NormalizedLength;
         public AnimationCurve DistortionStrength = AnimationCurve.Linear(0f, 1f, 1f, 1f);
+        [Range(0f, 1f)]
+        public float UniformDistortionStrength = 1f;
+
+        [SerializeField]
+        private List<Distorter> distorters = new List<Distorter>();
 
         // Abstract
         public abstract int NumPoints { get; }
@@ -116,6 +122,12 @@ namespace MRTK.UX
             }
         }
 
+        public void AddDistorter(Distorter newDistorter)
+        {
+            if (!distorters.Contains(newDistorter))
+                distorters.Add(newDistorter);
+        }
+
         /// <summary>
         /// Places all points between the first and last point in a straight line
         /// </summary>
@@ -139,20 +151,28 @@ namespace MRTK.UX
         /// <param name="worldLength"></param>
         /// <param name="searchResolution"></param>
         /// <returns></returns>
-        public float GetNormalizedLengthFromWorldLength (float worldLength, int searchResolution = 10) {
+        public float GetNormalizedLengthFromWorldLength (float worldLength, int searchResolution = 10)
+        {
             Vector3 lastPoint = GetUnclampedPoint(0f);
             Vector3 currentPoint = Vector3.zero;
             float normalizedLength = 0f;
             float distanceSoFar = 0f;
-            for (int i = 1; i < searchResolution; i++) {
+
+            for (int i = 1; i < searchResolution; i++)
+            {
+                // Get the normalized length of this position along the line
                 normalizedLength = (1f / searchResolution) * i;
                 currentPoint = GetUnclampedPoint(normalizedLength);
                 distanceSoFar += Vector3.Distance(lastPoint, currentPoint);
                 lastPoint = currentPoint;
-                if (distanceSoFar >= worldLength) {
+
+                if (distanceSoFar >= worldLength)
+                {
+                    // We've reached the world length
                     break;
-                }
-;            }
+                };
+            }
+
             return Mathf.Clamp01 (normalizedLength);
         }
 
@@ -243,11 +263,8 @@ namespace MRTK.UX
         /// <returns></returns>
         public Vector3 GetPoint(float normalizedLength)
         {
-            if (distorters == null)
-                FindDistorters();
-
             normalizedLength = ClampedLength(normalizedLength);
-            return transform.TransformPoint(DistortPoint(GetPointInternal(normalizedLength), normalizedLength));
+            return DistortPoint (transform.TransformPoint(GetPointInternal(normalizedLength)), normalizedLength);
         }
 
         /// <summary>
@@ -255,12 +272,10 @@ namespace MRTK.UX
         /// </summary>
         /// <param name="normalizedLength"></param>
         /// <returns></returns>
-        public Vector3 GetUnclampedPoint(float normalizedLength) {
-            if (distorters == null)
-                FindDistorters();
-
+        public Vector3 GetUnclampedPoint(float normalizedLength)
+        {
             normalizedLength = Mathf.Clamp01(normalizedLength);
-            return transform.TransformPoint(DistortPoint(GetPointInternal(normalizedLength), normalizedLength));
+            return DistortPoint(transform.TransformPoint(GetPointInternal(normalizedLength)), normalizedLength);
         }
 
         /// <summary>
@@ -298,15 +313,25 @@ namespace MRTK.UX
         // Private & protected
         protected virtual void OnEnable()
         {
-            // Reset this every time we're enabled
-            // This will help to ensure that our distorters list is updated
-            distorters = null;
+            // Sort our distorters
+            distorters.Sort();
         }
 
         private Vector3 DistortPoint (Vector3 point, float normalizedLength)
         {
-            float strength = DistortionStrength.Evaluate(normalizedLength);
-            for (int i = 0; i < distorters.Length; i++)
+            float strength = UniformDistortionStrength;
+            switch (DistortionType)
+            {
+                case LineUtils.DistortionTypeEnum.Uniform:
+                default:
+                    break;
+
+                case LineUtils.DistortionTypeEnum.NormalizedLength:
+                    strength = DistortionStrength.Evaluate(normalizedLength);
+                    break;
+            }
+
+            for (int i = 0; i < distorters.Count; i++)
             {
                 // Components may be added or removed
                 if (distorters[i] != null)
@@ -321,25 +346,6 @@ namespace MRTK.UX
         {
             return Mathf.Lerp(Mathf.Max (LineStartClamp, 0.0001f), Mathf.Min (LineEndClamp, 0.9999f), Mathf.Clamp01(normalizedLength));
         }
-
-        private void FindDistorters()
-        {
-            // Get all of the distorters attached to this gameobject
-            // Sort by distort order
-            Component[] distorterComponents = gameObject.GetComponents(typeof(IDistorter));
-            List<IDistorter> distorterList = new List<IDistorter>();
-            for (int i = 0; i < distorterComponents.Length; i++)
-            {
-                distorterList.Add((IDistorter)distorterComponents[i].GetComponent(typeof(IDistorter)));
-            }
-            distorterList.Sort(delegate (IDistorter d1, IDistorter d2)
-            {
-                return d1.DistortOrder.CompareTo(d2.DistortOrder);
-            });
-            distorters = distorterList.ToArray();
-        }
-        
-        private IDistorter[] distorters;
         
         [SerializeField]
         protected bool loops = false;

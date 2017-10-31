@@ -27,7 +27,7 @@ namespace MRTK.UX
         public Vector3 AxisSpeed = new Vector3(0.2f, 0.5f, 0.7f);
         public Vector3 AxisOffset = new Vector3(0.2f, 0.5f, 0.7f);
 
-        public override Vector3 DistortPoint(Vector3 point, float strength)
+        protected override Vector3 DistortPointInternal(Vector3 point, float strength)
         {
             Vector3 wiggly = point;           
             float scale = ScaleMultiplier * GlobalScale;
@@ -37,9 +37,9 @@ namespace MRTK.UX
             return point + (wiggly * strength);
         }
 
-        public override Vector3 DistortScale(Vector3 point, float strength)
+        protected override Vector3 DistortScaleInternal(Vector3 point, float strength)
         {
-            throw new System.NotImplementedException();
+            return point;
         }
 
         private float Wiggle(float speed, float offset, float strength)

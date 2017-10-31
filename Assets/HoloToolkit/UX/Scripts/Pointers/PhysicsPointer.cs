@@ -43,7 +43,12 @@ namespace MRTK.UX
         public RayStep[] Rays {
             get
             {
-                UpdateRays();
+                if (lastRayRebuildFrame < Time.frameCount)
+                {
+                    lastRayRebuildFrame = Time.frameCount;
+                    UpdateRays();
+                }
+
                 return rays;
             }
         }
@@ -171,6 +176,8 @@ namespace MRTK.UX
         }
 
         protected abstract void UpdateRays();
+
+        private int lastRayRebuildFrame = 0;
 
         public static bool CheckForHotSpot(GameObject primeFocus, out NavigationHotSpot hotSpot)
         {

@@ -75,6 +75,12 @@ namespace MRTK.UX
             FromCurve       // Create steps based on total length of line + animation curve
         }
 
+        public enum DistortionTypeEnum
+        {
+            NormalizedLength,   // Use the normalized length of the line plus its distortion strength curve to determine distortion strength
+            Uniform,            // Use a single value to determine distortion strength
+        }
+
         #endregion
 
         #region offset and rotation functions
