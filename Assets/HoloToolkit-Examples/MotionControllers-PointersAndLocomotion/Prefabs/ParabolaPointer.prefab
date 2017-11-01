@@ -74,6 +74,8 @@ GameObject:
   - component: {fileID: 114607052915475218}
   - component: {fileID: 114348939971081320}
   - component: {fileID: 114088560862565156}
+  - component: {fileID: 114751269683230306}
+  - component: {fileID: 114079339041154810}
   m_Layer: 0
   m_Name: ParabolaPointer
   m_TagString: Untagged
@@ -105,7 +107,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1613961251032978}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.472, y: 0.71, z: -0.684}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4150002195433764}
@@ -307,6 +309,20 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &114079339041154810
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1613961251032978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67c1695499429c74794eea34b1239ead, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pointer: {fileID: 0}
+  activePressType: 1
+  handedness: 1
 --- !u!114 &114088560862565156
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -369,6 +385,7 @@ MonoBehaviour:
   prioritizedLayerMasksOverride:
   - serializedVersion: 2
     m_Bits: 17
+  pointerOrientation: 0
   interactionEnabled: 0
   validLayers:
     serializedVersion: 2
@@ -494,14 +511,10 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   minValidDot: 0.2
-  targetOrientation: 0
+  lineCastResolution: 50
   parabolaDistance: 3
   parabolaDropDist: 1
-  lineCastResolution: 50
-  minValidDot: 0.2
   parabolaMain: {fileID: 0}
-  parabolaMainRenderers: []
-  totalLineDistance: 0
 --- !u!114 &114348939971081320
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -640,3 +653,19 @@ MonoBehaviour:
   End: {x: -0.0000057816505, y: 0, z: 3}
   UpDirection: {x: 0, y: 1, z: 0}
   Height: 1.0751488
+--- !u!114 &114751269683230306
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1613961251032978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e90cec81adb51e47a6968ad34140050, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  positionOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: 0, y: 0, z: 0}
+  setScaleOnAttach: 0
+  scale: {x: 1, y: 1, z: 1}
+  handedness: 1

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.WSA.Input;
 
-namespace MRDL.Controllers
+namespace MRTK.UX
 {
     /// <summary>
     /// Routes controller input to a physics pointer
@@ -12,7 +12,7 @@ namespace MRDL.Controllers
     [RequireComponent(typeof(AttachToController))]
     public class PointerInput : MonoBehaviour
     {
-        /*private void Awake()
+        private void Awake()
         {
             attachToController = GetComponent<AttachToController>();
             attachToController.Handedness = handedness;
@@ -21,7 +21,7 @@ namespace MRDL.Controllers
             if (pointer == null)
                 pointer = GetComponent<PhysicsPointer>();
 
-            pointer.Active = false;
+            pointer.InteractionEnabled = false;
         }
 
         private void OnAttach()
@@ -40,7 +40,7 @@ namespace MRDL.Controllers
         {
             if (obj.state.source.handedness == handedness && obj.pressType == activePressType)
             {
-                pointer.Active = true;
+                pointer.InteractionEnabled = true;
             }
         }
 
@@ -58,7 +58,7 @@ namespace MRDL.Controllers
                 {
                     angle = Mathf.Atan2(thumbstickPosition.y, thumbstickPosition.x) * Mathf.Rad2Deg;
                 }
-                pointer.TargetPointOrientation = angle;
+                pointer.PointerOrientation = angle;
             }
         }
 
@@ -70,7 +70,7 @@ namespace MRDL.Controllers
         {
             if (obj.state.source.handedness == handedness && obj.pressType == activePressType)
             {
-                pointer.Active = false;
+                pointer.InteractionEnabled = false;
             }
         }
 
@@ -81,6 +81,6 @@ namespace MRDL.Controllers
         [SerializeField]
         private InteractionSourceHandedness handedness = InteractionSourceHandedness.Left;
 
-        private AttachToController attachToController;*/
+        private AttachToController attachToController;
     }
 }

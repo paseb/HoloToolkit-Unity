@@ -42,7 +42,7 @@ namespace MRTK.UX
             transform.up = pointer.NavigatioNormal;
             // Point the arrow towards the target orientation
             arrowTransform.rotation = Quaternion.identity;
-            arrowTransform.Rotate (0f, pointer.NavigationOrientation, 0f);
+            arrowTransform.Rotate (0f, pointer.PointerOrientation, 0f);
         }
 
         [SerializeField]

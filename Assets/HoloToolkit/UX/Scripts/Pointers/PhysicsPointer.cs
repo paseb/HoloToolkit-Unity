@@ -84,6 +84,20 @@ namespace MRTK.UX
             get { return raycastOrigin != null ? raycastOrigin.forward : transform.forward; }
         }
 
+        public virtual float PointerOrientation
+        {
+            get
+            {
+                return pointerOrientation + (raycastOrigin != null ? raycastOrigin.eulerAngles.y : transform.eulerAngles.y);
+            }
+            set
+            {
+                pointerOrientation = value;
+            }
+        }
+
+        [SerializeField]
+        protected float pointerOrientation = 0f;
         [SerializeField]
         private bool interactionEnabled = false;
  

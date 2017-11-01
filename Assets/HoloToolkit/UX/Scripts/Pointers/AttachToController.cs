@@ -4,14 +4,14 @@ using HoloToolkit.Unity.InputModule;
 using UnityEngine;
 using UnityEngine.XR.WSA.Input;
 
-namespace MRDL.Controllers
+namespace MRTK.UX
 {
     /// <summary>
     /// Waits for a controller to be instantiated, then attaches itself to a specified element
     /// </summary>
     public class AttachToController : MonoBehaviour
     {
-        /*public Action OnAttach;
+        public Action OnAttach;
 
         public Transform Element { get { return elementTransform; } }
 
@@ -22,7 +22,7 @@ namespace MRDL.Controllers
         private IEnumerator Start()
         {
             // Wait for our controller to appear
-            while (!MotionControllerVisualizer.Instance.TryGetController (handedness, out controller))
+            /*while (!MotionControllerVisualizer.Instance.TryGetController (handedness, out controller))
             {
                 yield return null;
             }
@@ -40,7 +40,9 @@ namespace MRDL.Controllers
             transform.localPosition = positionOffset;
             transform.localEulerAngles = rotationOffset;
             if (setScaleOnAttach)
-                transform.localScale = scale;
+                transform.localScale = scale;*/
+
+            yield return null;
 
             // Announce that we're attached
             if (OnAttach != null)
@@ -59,10 +61,10 @@ namespace MRDL.Controllers
         private Vector3 scale = Vector3.one;
         [SerializeField]
         private InteractionSourceHandedness handedness = InteractionSourceHandedness.Left;
-        [SerializeField]
-        private MotionControllerInfo.ControllerElementEnum element = MotionControllerInfo.ControllerElementEnum.PointingPose;
+        /*[SerializeField]
+        private MotionControllerInfo.ControllerElementEnum element = MotionControllerInfo.ControllerElementEnum.PointingPose;*/
 
         private MotionControllerInfo controller;
-        private Transform elementTransform;*/
+        private Transform elementTransform;
     }
 }
