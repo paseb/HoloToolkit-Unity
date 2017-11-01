@@ -189,10 +189,12 @@ namespace HoloToolkit.Unity.InputModule
                     Object = null
                 };
             }
-
-            public void ResetFocusedObjects()
+           
+            public void ResetFocusedObjects(bool clearPreviousObject = true)
             {
-                PreviousEndObject = null;
+                if (clearPreviousObject)
+                    PreviousEndObject = null;
+
                 End = new FocusDetails
                 {
                     Point = End.Point,
@@ -445,6 +447,15 @@ namespace HoloToolkit.Unity.InputModule
             // Call the pointer's update function first
             pointer.PointingSource.UpdatePointer();
 
+            // If pointer interaction isn't enabled, clear its result object and return
+            if (!pointer.PointingSource.InteractionEnabled)
+            {
+                // Don't clear the previous focused object since we still want to trigger FocusExit events
+                pointer.ResetFocusedObjects(false);
+                return;
+            }
+
+            // Otherwise, continue
             var prioritizedLayerMasks = (pointer.PointingSource.PrioritizedLayerMasksOverride ?? pointingRaycastLayerMasks);
 
             // Perform raycast to determine focused object

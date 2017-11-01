@@ -131,6 +131,14 @@ namespace HoloToolkit.Unity.InputModule
             get { return RaycastLayerMasks; }
         }
 
+        public bool InteractionEnabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private float lastHitDistance = 2.0f;
 
         protected override void Awake()

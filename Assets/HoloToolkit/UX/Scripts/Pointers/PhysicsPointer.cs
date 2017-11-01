@@ -10,16 +10,7 @@ namespace MRTK.UX
     {
         void OnPointerTarget(PhysicsPointer source);
     }
-
-    [Serializable]
-    public enum PointerSurfaceResultEnum
-    {
-        None,
-        Valid,
-        Invalid,
-        HotSpot,
-    }
-
+    
     public abstract class PhysicsPointer : MonoBehaviour, IPointingSource
     {
         protected virtual void OnEnable()
@@ -29,14 +20,11 @@ namespace MRTK.UX
 
         protected virtual void OnDisable()
         {
-            FocusManager.Instance.UnregisterPointer(this);
+            if (FocusManager.Instance != null)
+            {
+                FocusManager.Instance.UnregisterPointer(this);
+            }
         }
-
-        #region input calls
-        public void SetSelectPressed(bool pressed) {
-            isSelectPressed = pressed;
-        }
-        #endregion
 
         #region IPointingSource implementation
 
@@ -51,6 +39,12 @@ namespace MRTK.UX
 
                 return rays;
             }
+        }
+
+        public virtual bool InteractionEnabled
+        {
+            get { return interactionEnabled; }
+            set { interactionEnabled = value; }
         }
 
         public virtual float? ExtentOverride { get { return null; } }
@@ -79,44 +73,20 @@ namespace MRTK.UX
         #endregion
 
         /// The world origin of the targeting ray
-        public Vector3 TargetOrigin {
+        public virtual Vector3 PointerOrigin
+        {
             get { return raycastOrigin != null ? raycastOrigin.position : transform.position; }
         }
+
         /// The forward direction of the targeting ray
-        public Vector3 TargetDirection {
+        public virtual Vector3 PointerDirection
+        {
             get { return raycastOrigin != null ? raycastOrigin.forward : transform.forward; }
         }
-        /// The orientation of the focuser.
-        public Quaternion TargetOrientation {
-            get { return raycastOrigin != null ? raycastOrigin.rotation : transform.rotation; }
-        }
-        /// Returns true if the select button for this focuser is held down.
-        public bool IsSelectPressed {
-            get { return isSelectPressed; }
-        }
-        /// Return true if the focuser is ready to interact. (For example if the ready gesture is detected on a hololens hand.)
-        public bool IsInteractionReady {
-            get { return isInteractionReady; }
-        }
-        /// Return true if this focuser allow for interaction and should be used for the main focus list.
-        public bool CanInteract {
-            get { return canInteract; }
-        }
 
-        [Header("Colors")]
         [SerializeField]
-        //[GradientDefault(GradientDefaultAttribute.ColorEnum.Blue, GradientDefaultAttribute.ColorEnum.White, 1f, 0.5f)]
-        protected Gradient lineColorValid;
-        [SerializeField]
-        //[GradientDefault(GradientDefaultAttribute.ColorEnum.Red, GradientDefaultAttribute.ColorEnum.White, 1f, 0.5f)]
-        protected Gradient lineColorInvalid;
-        [SerializeField]
-        //[GradientDefault(GradientDefaultAttribute.ColorEnum.Green, GradientDefaultAttribute.ColorEnum.White, 1f, 0.5f)]
-        protected Gradient lineColorHotSpot;
-        [SerializeField]
-        //[GradientDefault(GradientDefaultAttribute.ColorEnum.Gray, GradientDefaultAttribute.ColorEnum.White, 1f, 0.5f)]
-        protected Gradient lineColorNoTarget;
-
+        private bool interactionEnabled = false;
+ 
         [Header("Layers & Tags")]
         [SerializeField]
         [Tooltip("Layers that are considered 'valid'")]
@@ -124,42 +94,10 @@ namespace MRTK.UX
         [SerializeField]
         [Tooltip("Layers that are considered 'invalid'")]
         protected LayerMask invalidLayers = 1 << 2; // Ignore raycast
-
-        [Header("Focuser")]
+        [Tooltip("Source transform for raycast origin - leave null to use default transform")]
         [SerializeField]
-        [Tooltip("Returns true if the select button for this focuser is held down.")]
-        protected bool isSelectPressed;
-        [SerializeField]
-        [Tooltip("Return true if the focuser is ready to interact. (For example if the ready gesture is detected on a hololens hand.)")]
-        protected bool isInteractionReady;
-        [SerializeField]
-        [Tooltip("Return true if this focuser allow for interaction and should be used for the main focus list.")]
-        protected bool canInteract;
-        [SerializeField]
-        private Transform raycastOrigin;
-
-        /// The result of our hit
-        public PointerSurfaceResultEnum HitResult { get; protected set; }
-
-        public Gradient GetColor (PointerSurfaceResultEnum targetResult)
-        {
-            switch (targetResult)
-            {
-                case PointerSurfaceResultEnum.None:
-                default:
-                    return lineColorNoTarget;
-
-                case PointerSurfaceResultEnum.Valid:
-                    return lineColorValid;
-
-                case PointerSurfaceResultEnum.Invalid:
-                    return lineColorInvalid;
-
-                case PointerSurfaceResultEnum.HotSpot:
-                    return lineColorHotSpot;
-            }
-        }
-               
+        protected Transform raycastOrigin;
+              
         public virtual void UpdatePointer()
         {
             return;
@@ -178,27 +116,7 @@ namespace MRTK.UX
         protected abstract void UpdateRays();
 
         private int lastRayRebuildFrame = 0;
-
-        public static bool CheckForHotSpot(GameObject primeFocus, out NavigationHotSpot hotSpot)
-        {
-            hotSpot = null;
-
-            if (primeFocus == null)
-                return false;
-
-            // First check the target directly
-            hotSpot = primeFocus.GetComponent<NavigationHotSpot>();
-            if (hotSpot == null) {
-                // Then check the attached rigidbody, just in case
-                Collider c = primeFocus.GetComponent<Collider>();
-                if (c != null && c.attachedRigidbody != null) {
-                    hotSpot = c.attachedRigidbody.GetComponent<NavigationHotSpot>();
-                }
-            }
-
-            return hotSpot != null;
-        }
-        
+       
         #region custom editor
 #if UNITY_EDITOR
         [UnityEditor.CustomEditor(typeof(PhysicsPointer))]

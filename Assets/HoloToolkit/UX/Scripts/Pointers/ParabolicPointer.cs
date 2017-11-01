@@ -6,7 +6,7 @@ namespace MRTK.UX
 {
     [RequireComponent(typeof(Parabola))]
     [RequireComponent(typeof(DistorterGravity))]
-    public class ParabolicPointer : PhysicsPointer
+    public class ParabolicPointer : NavigationPointer
     {
         protected override void OnEnable()
         {
@@ -45,22 +45,23 @@ namespace MRTK.UX
             }
 
             // Re-enable gravity if we're looking at a hotspot
-            distorterGravity.enabled = (HitResult == PointerSurfaceResultEnum.HotSpot);
+            distorterGravity.enabled = (HitResult == NavigationSurfaceResultEnum.HotSpot);
         }
 
         public override void UpdatePointer() {
 
             // Set up our parabola
-            Vector3 parabolaTarget = TargetOrigin + (TargetDirection * parabolaDistance) + (Vector3.down * parabolaDropDist);
-            parabolaMain.FirstPoint = TargetOrigin;
+            Vector3 parabolaTarget = PointerOrigin + (PointerDirection * parabolaDistance) + (Vector3.down * parabolaDropDist);
+            parabolaMain.FirstPoint = PointerOrigin;
             parabolaMain.LastPoint = parabolaTarget;
 
             // Use the results from the last update to set our HitResult
             float clearWorldLength = 0f;
-            HitResult = PointerSurfaceResultEnum.None;
+            HitResult = NavigationSurfaceResultEnum.None;
             distorterGravity.enabled = false;
+            targetHotSpot = null;
 
-            if (isSelectPressed)
+            if (InteractionEnabled)
             {
                 parabolaMain.enabled = true;
 
@@ -68,26 +69,37 @@ namespace MRTK.UX
                 if (Result.End.Object != null)
                 {
                     // Check if it's in our valid layers
-                    if ((Result.End.Object.layer & validLayers) == 0)
+                    if ((Result.End.Object.layer & validLayers) != 0)
                     {
-                        HitResult = PointerSurfaceResultEnum.Valid;
                         // See if it's a hot spot
-                        NavigationHotSpot hotSpot = null;
-                        if (PhysicsPointer.CheckForHotSpot(Result.End.Object, out hotSpot))
+                        if (NavigationPointer.CheckForHotSpot(Result.End.Object, out targetHotSpot) && targetHotSpot.IsActive)
                         {
-                            HitResult = PointerSurfaceResultEnum.HotSpot;
+                            HitResult = NavigationSurfaceResultEnum.HotSpot;
                             // Turn on gravity, point it at hotspot
-                            distorterGravity.WorldCenterOfGravity = hotSpot.transform.position;
+                            distorterGravity.WorldCenterOfGravity = targetHotSpot.Position;
                             distorterGravity.enabled = true;
                         }
+                        else
+                        {
+                            // If it's NOT a hotspot, check if the hit normal is too steep 
+                            // (Hotspots override dot requirements)
+                            if (Vector3.Dot (Result.End.Normal, Vector3.up) < minValidDot)
+                            {
+                                HitResult = NavigationSurfaceResultEnum.Invalid;
+                            }
+                            else
+                            {
+                                HitResult = NavigationSurfaceResultEnum.Valid;
+                            }
+                        }
                     }
-                    else if ((Result.End.Object.layer & invalidLayers) == 0)
+                    else if ((Result.End.Object.layer & invalidLayers) != 0)
                     {
-                        HitResult = PointerSurfaceResultEnum.Invalid;
+                        HitResult = NavigationSurfaceResultEnum.Invalid;
                     }
                     else
                     {
-                        HitResult = PointerSurfaceResultEnum.None;
+                        HitResult = NavigationSurfaceResultEnum.None;
                     }
 
                     // Use the step index to determine the length of the hit
@@ -95,7 +107,7 @@ namespace MRTK.UX
                     {
                         if (i == Result.RayStepIndex)
                         {
-                            Debug.DrawLine(Result.StartPoint + Vector3.up * 0.1f, Result.End.Point + Vector3.up * 0.1f, (HitResult != PointerSurfaceResultEnum.None) ? Color.yellow : Color.cyan);
+                            Debug.DrawLine(Result.StartPoint + Vector3.up * 0.1f, Result.End.Point + Vector3.up * 0.1f, (HitResult != NavigationSurfaceResultEnum.None) ? Color.yellow : Color.cyan);
                             // Only add the distance between the start point and the hit
                             clearWorldLength += Vector3.Distance(Result.StartPoint, Result.End.Point);
                         }
@@ -137,11 +149,11 @@ namespace MRTK.UX
         [SerializeField]
         private Parabola parabolaMain;
         [SerializeField]
+        private MRTK.UX.LineRenderer [] parabolaMainRenderers;
+        /*[SerializeField]
         private Parabola parabolaBounce;
         [SerializeField]
-        private MRTK.UX.LineRenderer [] parabolaMainRenderers;
-        [SerializeField]
-        private MRTK.UX.LineRenderer [] parabolaBounceRenderers;
+        private MRTK.UX.LineRenderer [] parabolaBounceRenderers;*/
         [SerializeField]
         private float totalLineDistance;
 

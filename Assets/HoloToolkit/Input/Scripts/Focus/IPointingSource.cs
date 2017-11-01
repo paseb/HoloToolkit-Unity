@@ -11,6 +11,8 @@ namespace HoloToolkit.Unity.InputModule
     /// </summary>
     public interface IPointingSource
     {
+        bool InteractionEnabled { get; }
+
         float? ExtentOverride { get; }
         
         RayStep[] Rays { get; }

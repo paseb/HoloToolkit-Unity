@@ -5,7 +5,7 @@ using HoloToolkit.Unity.InputModule;
 namespace MRTK.UX
 {
     [RequireComponent(typeof(Line))]
-    public class LinePointer : PhysicsPointer {
+    public class LinePointer : NavigationPointer {
 
         protected override void OnEnable()
         {
@@ -28,20 +28,20 @@ namespace MRTK.UX
 
         protected override void UpdateRays()
         {
-            rays[0] = new RayStep(TargetOrigin, TargetOrigin + TargetDirection * FocusManager.Instance.GetPointingExtent(this));
+            rays[0] = new RayStep(PointerOrigin, PointerOrigin + PointerDirection * FocusManager.Instance.GetPointingExtent(this));
         }
 
         public override void UpdatePointer() {
 
             base.UpdatePointer();
 
-            HitResult = PointerSurfaceResultEnum.None;
+            HitResult = NavigationSurfaceResultEnum.None;
 
-            if (IsSelectPressed)
+            if (InteractionEnabled)
             {
                 line.enabled = true;
-                line.FirstPoint = TargetOrigin;
-                line.LastPoint = TargetOrigin + TargetDirection * FocusManager.Instance.GetPointingExtent(this);
+                line.FirstPoint = PointerOrigin;
+                line.LastPoint = PointerOrigin + PointerDirection * FocusManager.Instance.GetPointingExtent(this);
 
                 if (Result.End.Object != null)
                 {
@@ -49,25 +49,25 @@ namespace MRTK.UX
                     // Prime focus is on a valid layer
                     if (((1 << Result.End.Object.layer) & validLayers.value) != 0)
                     {
-                        HitResult = PointerSurfaceResultEnum.Valid;
+                        HitResult = NavigationSurfaceResultEnum.Valid;
                         // Check our focuser hit for pointer results
-                        NavigationHotSpot hotSpot = null;
-                        if (PhysicsPointer.CheckForHotSpot(Result.End.Object, out hotSpot))
+                        INavigationHotSpot hotSpot = null;
+                        if (NavigationPointer.CheckForHotSpot(Result.End.Object, out hotSpot) && hotSpot.IsActive)
                         {
-                            HitResult = PointerSurfaceResultEnum.HotSpot;
+                            HitResult = NavigationSurfaceResultEnum.HotSpot;
                             // If we've hit a hotspot, set the end point to the hotspot
-                            line.LastPoint = hotSpot.transform.position;
+                            line.LastPoint = hotSpot.Position;
                         }
                     }
                     else if (((1 << Result.End.Object.layer) & invalidLayers.value) != 0)
                     {
                         // Prime focus is on an invalid layer
-                        HitResult = PointerSurfaceResultEnum.Invalid;
+                        HitResult = NavigationSurfaceResultEnum.Invalid;
                     }
                     else
                     {
                         // Prime focus has no value at all
-                        HitResult = PointerSurfaceResultEnum.None;
+                        HitResult = NavigationSurfaceResultEnum.None;
                     }
 
                     // Set the line color

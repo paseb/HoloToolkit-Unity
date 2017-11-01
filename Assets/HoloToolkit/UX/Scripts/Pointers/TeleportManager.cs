@@ -59,7 +59,7 @@ namespace MRTK.UX
 
         }
 
-        private void InitiateTeleport(PhysicsPointer newPointer)
+        private void InitiateTeleport(NavigationPointer newPointer)
         {
             if (state != StateEnum.None)
             {
@@ -89,7 +89,6 @@ namespace MRTK.UX
         private IEnumerator TeleportOverTime()
         {
             state = StateEnum.Initiating;
-            currentPointer.SetSelectPressed(true);
             orientationOffset = 0f;
 
             if (OnTeleportInitiate != null)
@@ -104,8 +103,8 @@ namespace MRTK.UX
 
                     switch (currentPointer.HitResult)
                     {
-                        case PointerSurfaceResultEnum.HotSpot:
-                        case PointerSurfaceResultEnum.Valid:
+                        case NavigationSurfaceResultEnum.HotSpot:
+                        case NavigationSurfaceResultEnum.Valid:
                             state = StateEnum.Ready;
                             //targetPosition = currentPointer.TargetPoint;
                             //targetRotation = new Vector3(0f, currentPointer.HitOrientation, 0f);
@@ -154,8 +153,7 @@ namespace MRTK.UX
                 // (Don't override disabled state)
                 if (state != StateEnum.Disabled)
                     state = StateEnum.None;
-
-                currentPointer.SetSelectPressed (false);
+                
                 yield return null;
 
             }
@@ -170,7 +168,7 @@ namespace MRTK.UX
         [SerializeField]
         private PointerBehaviorEnum pointerBehavior = PointerBehaviorEnum.Override;
 
-        private PhysicsPointer currentPointer;
+        private NavigationPointer currentPointer;
         private float orientationOffset = 0f;
 
         private Vector3 startPosition;

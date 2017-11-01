@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MRDL.Interaction
+namespace MRTK.UX
 {
     public class InteractibleHighlight : MonoBehaviour
     {
@@ -13,7 +13,6 @@ namespace MRDL.Interaction
             None,
             Highlight,
             Outline,
-            Cutout
         }
 
         public enum FadeStyleEnum
@@ -22,10 +21,17 @@ namespace MRDL.Interaction
             Smooth,
         }
 
-        private enum StateEnum
+        public virtual void OnEnable()
         {
-            MaterialsRemoved,
-            MaterialsAdded,
+            if (targetRenderers == null || targetRenderers.Length == 0)
+                targetRenderers = GetComponentsInChildren<Renderer>();
+
+            Refresh();
+        }
+
+        public virtual void OnDisable()
+        {
+            Refresh();
         }
 
         public bool HasFocus {
@@ -62,18 +68,10 @@ namespace MRDL.Interaction
 
         public string OutlineColorProp = "_Color";
 
-        public void FocusEnter() {
-            HasFocus = true;
-        }
-        
-        public void FocusExit() {
-            HasFocus = false;
-        }
-
         [SerializeField]
-        private Color highlightColor;
+        private Color highlightColor = Color.green;
         [SerializeField]
-        private Color outlineColor;        
+        private Color outlineColor = Color.white;
         [SerializeField]
         private Renderer[] targetRenderers;
         [SerializeField]
@@ -87,10 +85,11 @@ namespace MRDL.Interaction
         [SerializeField]
         private bool hasFocus = false;
 
-        private StateEnum focusState = StateEnum.MaterialsRemoved;
+        private MatStyleEnum focusState = MatStyleEnum.None;
 
         private void Refresh() {
-            if (hasFocus) {
+            
+            if (isActiveAndEnabled && hasFocus) {
                 AddFocusMats();
             } else {
                 RemoveFocusMats();
@@ -98,7 +97,8 @@ namespace MRDL.Interaction
         }
 
         private void AddFocusMats() {
-            if (focusState == StateEnum.MaterialsAdded)
+            // If we've added our focus mats already, split
+            if ((focusState & matStyle) != 0)
                 return;
 
             if (materialsBeforeFocus == null) {
@@ -114,15 +114,32 @@ namespace MRDL.Interaction
                     preFocusMaterials.Clear();
                 }
                 preFocusMaterials.AddRange(targetRenderers[i].sharedMaterials);
+                // Remove any references to outline and highlight materials
+                preFocusMaterials.Remove(highlightMat);
+                preFocusMaterials.Remove(outlineMat);
             }
 
-            if ((matStyle & MatStyleEnum.Highlight) != 0) {
-                AddMatToRenderers(targetRenderers, highlightMat, HighlightColorProp, highlightColor);
+            // If we're using a highlight
+            if ((matStyle & MatStyleEnum.Highlight) != 0)
+            {   
+                // And we haven't added it yet
+                if ((focusState & MatStyleEnum.Highlight) == 0)
+                {
+                    AddMatToRenderers(targetRenderers, highlightMat, HighlightColorProp, highlightColor);
+                }
             }
-            if ((matStyle & MatStyleEnum.Outline) != 0) {
-                AddMatToRenderers(targetRenderers, outlineMat, OutlineColorProp, outlineColor);
+
+            // If we're using an outline
+            if ((matStyle & MatStyleEnum.Outline) != 0)
+            {
+                // And we haven't added it yet
+                if ((focusState & MatStyleEnum.Outline) == 0)
+                {
+                    AddMatToRenderers(targetRenderers, outlineMat, OutlineColorProp, outlineColor);
+                }
             }
-            focusState = StateEnum.MaterialsAdded;
+
+            focusState = matStyle;
         }
 
         private void RemoveFocusMats() {
@@ -133,7 +150,7 @@ namespace MRDL.Interaction
                 preFocusMats.Key.sharedMaterials = preFocusMats.Value.ToArray();
             }
             materialsBeforeFocus.Clear();
-            focusState = StateEnum.MaterialsRemoved;
+            focusState = MatStyleEnum.None;
         }
 
         private static Material AddMatToRenderers(Renderer[] renderers, Material mat, string propName, Color color) {

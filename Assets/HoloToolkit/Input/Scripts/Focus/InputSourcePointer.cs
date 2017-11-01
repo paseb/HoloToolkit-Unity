@@ -33,6 +33,14 @@ namespace HoloToolkit.Unity.InputModule
 
         public LayerMask[] PrioritizedLayerMasksOverride { get; set; }
 
+        public bool InteractionEnabled
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private RayStep[] rays = new RayStep[1] { new RayStep(Vector3.zero, Vector3.forward) };
         
         public void UpdatePointer()
