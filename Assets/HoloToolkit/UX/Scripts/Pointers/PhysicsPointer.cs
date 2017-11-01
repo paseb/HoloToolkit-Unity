@@ -72,6 +72,16 @@ namespace MRTK.UX
 
         #endregion
 
+        public virtual void SelectPress()
+        {
+
+        }
+
+        public virtual void SelectRelease()
+        {
+
+        }
+
         /// The world origin of the targeting ray
         public virtual Vector3 PointerOrigin
         {

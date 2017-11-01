@@ -65,6 +65,38 @@ namespace MRTK.UX
             set { pointerOrientation = value; }
         }
 
+        public override bool InteractionEnabled
+        {
+            get
+            {
+                return selectPressed || base.InteractionEnabled;
+            }
+        }
+
+        public override void SelectPress()
+        {
+            selectPressed = true;
+
+            switch (HitResult)
+            {
+                case NavigationSurfaceResultEnum.Invalid:
+                case NavigationSurfaceResultEnum.None:
+                    return;
+
+                default:
+                    break;
+            }
+
+            TeleportManager.Instance.InitiateTeleport(this);
+        }
+
+        public override void SelectRelease()
+        {
+            selectPressed = false;
+
+            TeleportManager.Instance.TryToTeleport();
+        }
+
         [Header("Colors")]
         [SerializeField]
         //[GradientDefault(GradientDefaultAttribute.ColorEnum.Blue, GradientDefaultAttribute.ColorEnum.White, 1f, 0.5f)]
@@ -88,6 +120,7 @@ namespace MRTK.UX
         private LineRenderer[] lineRenderers;
         private DistorterGravity distorterGravity;
         protected INavigationHotSpot targetHotSpot;
+        private bool selectPressed = false;
 
         /// The result of our hit
         public NavigationSurfaceResultEnum HitResult { get; protected set; }

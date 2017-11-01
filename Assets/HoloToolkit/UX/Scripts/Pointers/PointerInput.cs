@@ -38,9 +38,16 @@ namespace MRTK.UX
         /// <param name="obj"></param>
         private void InteractionSourcePressed(InteractionSourcePressedEventArgs obj)
         {
-            if (obj.state.source.handedness == handedness && obj.pressType == activePressType)
+            if (obj.state.source.handedness == handedness)
             {
-                pointer.InteractionEnabled = true;
+                if (obj.pressType == activePressType)
+                {
+                    pointer.InteractionEnabled = true;
+                }
+                else if (obj.pressType == selectPressType)
+                {
+                    pointer.SelectPress();
+                }
             }
         }
 
@@ -72,12 +79,18 @@ namespace MRTK.UX
             {
                 pointer.InteractionEnabled = false;
             }
+            else if (obj.pressType == selectPressType)
+            {
+                pointer.SelectRelease();
+            }
         }
 
         [SerializeField]
         private PhysicsPointer pointer = null;
         [SerializeField]
         private InteractionSourcePressType activePressType = InteractionSourcePressType.Select;
+        [SerializeField]
+        private InteractionSourcePressType selectPressType = InteractionSourcePressType.Select;
         [SerializeField]
         private InteractionSourceHandedness handedness = InteractionSourceHandedness.Left;
 

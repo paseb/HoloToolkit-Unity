@@ -35,7 +35,7 @@ namespace MRTK.UX
             }
         }
                 
-        private void Update()
+        /*private void Update()
         {
             // TEMP controller input
             if (Input.GetKeyDown(KeyCode.Space))
@@ -56,10 +56,9 @@ namespace MRTK.UX
             {
                 orientationOffset += 5f;
             }
+        }*/
 
-        }
-
-        private void InitiateTeleport(NavigationPointer newPointer)
+        public void InitiateTeleport(NavigationPointer newPointer)
         {
             if (state != StateEnum.None)
             {
@@ -70,7 +69,7 @@ namespace MRTK.UX
             StartCoroutine(TeleportOverTime());
         }
 
-        private void TryToTeleport()
+        public void TryToTeleport()
         {
             switch (state)
             {
@@ -99,15 +98,13 @@ namespace MRTK.UX
                 // Use the pointer to choose a target position
                 while (state == StateEnum.Initiating || state == StateEnum.Ready)
                 {
-                    //currentPointer.HitOrientation = orientationOffset + Camera.main.transform.eulerAngles.y;//Veil.Instance.HeadTransform.eulerAngles.y;
-
                     switch (currentPointer.HitResult)
                     {
                         case NavigationSurfaceResultEnum.HotSpot:
                         case NavigationSurfaceResultEnum.Valid:
                             state = StateEnum.Ready;
-                            //targetPosition = currentPointer.TargetPoint;
-                            //targetRotation = new Vector3(0f, currentPointer.HitOrientation, 0f);
+                            targetPosition = currentPointer.NavigationTarget;
+                            targetRotation = new Vector3(0f, currentPointer.PointerOrientation, 0f);
                             break;
 
                         default:

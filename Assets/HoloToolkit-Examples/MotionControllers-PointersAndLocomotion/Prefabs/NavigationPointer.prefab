@@ -193,6 +193,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pointer: {fileID: 0}
   activePressType: 1
+  selectPressType: 4
   handedness: 1
 --- !u!114 &114580070563188366
 MonoBehaviour:
